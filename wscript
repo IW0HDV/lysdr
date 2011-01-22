@@ -22,7 +22,7 @@ def configure(conf):
     conf.env.CCFLAGS +=  ["-DG_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"]
     #conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]
 
-    conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.6.0', mandatory=True, args='--cflags --libs')
+    conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.12.0', mandatory=True, args='--cflags --libs')
     conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.118.0', mandatory=True, args = '--cflags --libs')
     conf.check_cfg(package = 'fftw3', uselib_store='FFTW', atleast_version = '3.2.2', mandatory=True, args = '--cflags --libs')
     

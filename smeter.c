@@ -16,6 +16,10 @@
 #include <gtk/gtk.h>
 #include "smeter.h"
 
+#if !GTK_CHECK_VERSION (2, 14, 0)
+   #define gtk_widget_get_window(widget) widget->window
+#endif
+
 static GtkWidgetClass *parent_class = NULL;
 G_DEFINE_TYPE (SDRSMeter, sdr_smeter, GTK_TYPE_DRAWING_AREA);
 
