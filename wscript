@@ -23,6 +23,7 @@ def configure(conf):
     #conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]
 
     conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.12.0', mandatory=True, args='--cflags --libs')
+    conf.check_cfg(package='gthread-2.0', uselib_store='GTHREAD', atleast_version='2.16.6', mandatory=True, args='--cflags --libs')
     conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.109.0', mandatory=True, args = '--cflags --libs')
     conf.check_cfg(package = 'fftw3', uselib_store='FFTW', atleast_version = '3.1.2', mandatory=True, args = '--cflags --libs')
     
@@ -32,6 +33,6 @@ def build(bld):
         features = 'cc cprogram',
         source = bld.path.ant_glob('**/*.c'),
         target = 'lysdr',
-        uselib = "GTK JACK FFTW",
+        uselib = "GTK GTHREAD JACK FFTW",
         includes = '. /usr/include ./waterfall')
 
