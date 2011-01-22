@@ -23,7 +23,9 @@
 
 // For older Debian
 #if !GTK_CHECK_VERSION (2, 14, 0)
-    #define gtk_widget_get_window(widget) widget->window
+	#define gtk_widget_get_window(widget) widget->window
+	#define gtk_adjustment_set_lower(a,v)           ((a)->lower = (v))
+	#define gtk_adjustment_set_upper(a,v)           ((a)->upper = (v))
 #endif
 
 
