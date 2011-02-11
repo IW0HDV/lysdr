@@ -51,6 +51,16 @@ static void sdr_scale_init (SDRScale *scale) {
     scale->centre_freq = 0;
 }
 
+GtkWidget *sdr_scale_new() {
+    SDRScale *scale;
+
+    scale = g_object_new(
+        SDR_TYPE_SCALE,
+        NULL
+    );
+    return GTK_WIDGET(scale);
+}
+
 static gboolean sdr_scale_expose(GtkWidget *widget, GdkEventExpose *event) {
     // draw the scale to a handy pixmap
     SDRScale *scale = SDR_SCALE(widget);
@@ -59,11 +69,15 @@ static gboolean sdr_scale_expose(GtkWidget *widget, GdkEventExpose *event) {
     gint i, j, val;
     gchar s[10];
     
+    // FIXME horrible assumptions hardcoded in
+    scale->sample_rate = 48000;
+    scale->centre_freq = 144200000;
+    
     //wf->centre_freq = centre_freq;
     
     if (!scale->scale) scale->scale = gdk_pixmap_new(gtk_widget_get_window(widget), width, SCALE_HEIGHT, -1);
     
-    cr = gdk_cairo_create(scale->scale);
+    cr = gdk_cairo_create(gtk_widget_get_window(widget));
     cairo_rectangle(cr, 0, 0, width, SCALE_HEIGHT);
     cairo_clip(cr);
     
@@ -91,7 +105,6 @@ static gboolean sdr_scale_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_destroy(cr);
  
 }
-
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
 

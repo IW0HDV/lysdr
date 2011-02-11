@@ -19,6 +19,7 @@
 
 #include "sdr.h"
 #include "waterfall.h"
+#include "scale.h"
 #include "smeter.h"
 
 extern sdr_data_t *sdr;
@@ -154,6 +155,7 @@ void gui_display(sdr_data_t *sdr)
     GtkWidget *filter_combo;
     GtkWidget *mode_combo;
     GtkWidget *agc_combo;
+    GtkWidget *scale;
     
     float tune_max;
     
@@ -170,6 +172,7 @@ void gui_display(sdr_data_t *sdr)
     
     sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
     sdr->hp_tune = gtk_adjustment_new(300, 25, 3400, 10, 100, 0); // pretty arbitrary limits
+
 
     // buttons etc
     hbox = gtk_hbox_new(FALSE,1);
@@ -202,6 +205,10 @@ void gui_display(sdr_data_t *sdr)
     gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
+    
+    scale = sdr_scale_new();
+    gtk_widget_set_size_request(scale, FFT_SIZE, 24);
+    gtk_box_pack_start(GTK_BOX(vbox), scale, TRUE, TRUE,0 );
     // common softrock frequencies
     // 160m =  1844250
     // 80m  =  3528000

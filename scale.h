@@ -54,7 +54,7 @@ G_END_DECLS
 #define SCALE_HEIGHT 24
 #define SCALE_TICK 5000
 
-GtkWidget *sdr_scale_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size);
+GtkWidget *sdr_scale_new();
 void sdr_scale_update(GtkWidget *widget, guchar *row);
 void sdr_scale_set_scale(GtkWidget *widget, gint centre_freq);
 
