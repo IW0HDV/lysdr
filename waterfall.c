@@ -518,4 +518,5 @@ void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_lower(wf->lp_tune, value);
 }
 
+/* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
 

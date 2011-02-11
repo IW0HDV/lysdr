@@ -13,8 +13,6 @@
     GNU General Public License for more details.
 */
 
-
-
 #ifndef __WATERFALL_H
 #define __WATERFALL_H
 
@@ -98,4 +96,4 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq);
 void sdr_waterfall_filter_cursors(SDRWaterfall *wf);
 #endif /* __WATERFALL_H */
 
-
+/* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
