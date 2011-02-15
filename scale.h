@@ -26,7 +26,6 @@ typedef struct _SDRScalePrivate     SDRScalePrivate;
 
 struct _SDRScale {
     GtkDrawingArea parent;
-    GdkPixmap *scale;
     gint width;
     gint sample_rate;
     gint centre_freq;

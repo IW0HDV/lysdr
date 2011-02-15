@@ -71,9 +71,7 @@ static gboolean sdr_scale_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_t *cr;
     gint i, j, val;
     gchar s[10];
-    
-    if (!scale->scale) scale->scale = gdk_pixmap_new(gtk_widget_get_window(widget), width, SCALE_HEIGHT, -1);
-    
+   
     cr = gdk_cairo_create(gtk_widget_get_window(widget));
     cairo_rectangle(cr, 0, 0, width, SCALE_HEIGHT);
     cairo_clip(cr);
