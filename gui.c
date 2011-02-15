@@ -92,13 +92,12 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
     switch (state) {
         case 0:
-    		sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
-	        sdr_waterfall_set_highpass(wfdisplay, 300.0f);
-	        break;
+			sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+			sdr_waterfall_set_highpass(wfdisplay, 300.0f);
+			break;
         case 1:
-		    sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
-    		sdr_waterfall_set_highpass(wfdisplay, 900.0f);
-            sdr->agc_speed = 0.001;
+			sdr_waterfall_set_lowpass(wfdisplay, 1500.0f);
+			sdr_waterfall_set_highpass(wfdisplay, 500.0f);
             break;
     }
 }
@@ -155,7 +154,7 @@ void gui_display(sdr_data_t *sdr)
     GtkWidget *filter_combo;
     GtkWidget *mode_combo;
     GtkWidget *agc_combo;
-    GtkWidget *scale;
+	GtkWidget *scale;
     
     float tune_max;
     
@@ -206,9 +205,9 @@ void gui_display(sdr_data_t *sdr)
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
     
-    scale = sdr_scale_new();
+    scale = sdr_scale_new(sdr->sample_rate, sdr->centre_freq);
     gtk_widget_set_size_request(scale, FFT_SIZE, 24);
-    gtk_box_pack_start(GTK_BOX(vbox), scale, TRUE, TRUE,0 );
+
     // common softrock frequencies
     // 160m =  1844250
     // 80m  =  3528000
@@ -219,6 +218,7 @@ void gui_display(sdr_data_t *sdr)
     SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), scale, TRUE, TRUE,0 );
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     
     gtk_widget_show_all(mainWindow);

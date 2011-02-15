@@ -51,13 +51,15 @@ static void sdr_scale_init (SDRScale *scale) {
     scale->centre_freq = 0;
 }
 
-GtkWidget *sdr_scale_new() {
+GtkWidget *sdr_scale_new(gint sample_rate, gint centre_freq) {
     SDRScale *scale;
 
     scale = g_object_new(
         SDR_TYPE_SCALE,
         NULL
     );
+    scale->sample_rate = sample_rate;
+    scale->centre_freq = centre_freq;
     return GTK_WIDGET(scale);
 }
 
@@ -65,15 +67,10 @@ static gboolean sdr_scale_expose(GtkWidget *widget, GdkEventExpose *event) {
     // draw the scale to a handy pixmap
     SDRScale *scale = SDR_SCALE(widget);
     gint width = 1024; // FIXME scale->width;
+    cairo_text_extents_t extent;
     cairo_t *cr;
     gint i, j, val;
     gchar s[10];
-    
-    // FIXME horrible assumptions hardcoded in
-    scale->sample_rate = 48000;
-    scale->centre_freq = 144200000;
-    
-    //wf->centre_freq = centre_freq;
     
     if (!scale->scale) scale->scale = gdk_pixmap_new(gtk_widget_get_window(widget), width, SCALE_HEIGHT, -1);
     
@@ -91,19 +88,29 @@ static gboolean sdr_scale_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     val = (trunc(scale->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
     
-    for (i=-val; i<val; i+=SCALE_TICK) {  // FIXME hardcoded
+    // work out how wide the frequency label is going to be
+    sprintf(s, "%4.3f", scale->centre_freq/1000000.0f);
+    cairo_text_extents(cr, s, &extent);
+    
+    for (i=-val; i<val; i+=SCALE_TICK) {  // FIXME hardcoded scale tick
         j = width * (0.5+((double)i/scale->sample_rate));
         cairo_set_source_rgb(cr, 1, 0, 0);
         cairo_move_to(cr, 0.5+j, 0);
         cairo_line_to(cr, 0.5+j, 8);
         cairo_stroke(cr);
-        cairo_move_to(cr, j-10, 18);
+        cairo_move_to(cr, j-(extent.width/2), 18);
         cairo_set_source_rgb(cr, .75, .75, .75);
         sprintf(s, "%4.3f", (scale->centre_freq/1000000.0f)+(i/1000000.0f));
         cairo_show_text(cr,s);
     }
     cairo_destroy(cr);
  
+}
+
+void sdr_scale_set_scale(GtkWidget *widget, gint centre_freq) {
+	SDRScale *scale = SDR_SCALE(widget);
+	scale->centre_freq = centre_freq;
+	gtk_widget_queue_draw(widget);
 }
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

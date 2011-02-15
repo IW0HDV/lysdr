@@ -40,13 +40,12 @@ struct _SDRWaterfall {
     GtkAdjustment *hp_tune;
 
     GdkPixmap *pixmap;
-    GdkPixmap *scale;
     cairo_surface_t *pix;
 
     gint mode;
 
     gint width;
-    gint wf_height;
+    gint height;
     
     gint sample_rate;
     gint centre_freq;
@@ -92,7 +91,6 @@ float sdr_waterfall_get_highpass(SDRWaterfall *wf);
 
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value);
 void sdr_waterfall_update(GtkWidget *widget, guchar *row);
-void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq);
 void sdr_waterfall_filter_cursors(SDRWaterfall *wf);
 #endif /* __WATERFALL_H */
 

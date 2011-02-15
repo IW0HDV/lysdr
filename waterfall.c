@@ -31,7 +31,6 @@ static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *
 static gboolean sdr_waterfall_scroll(GtkWidget *widget, GdkEventScroll *event);
 static void sdr_waterfall_realize(GtkWidget *widget);
 static void sdr_waterfall_unrealize(GtkWidget *widget);
-static void sdr_waterfall_draw_scale(GtkWidget *widget);
 void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value);
 void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
 
@@ -53,7 +52,6 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
 }
 
 static void sdr_waterfall_init (SDRWaterfall *wf) {
-    
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     gtk_widget_set_events(GTK_WIDGET(wf), GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
     priv->prelight = P_NONE;
@@ -84,9 +82,8 @@ void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
 static void sdr_waterfall_realize(GtkWidget *widget) {
     // here we handle things that must happen once the widget has a size
     SDRWaterfall *wf;
-//    GtkAllocation *allocation;
     cairo_t *cr;
-    gint i, j, scale, width;
+    gint i, j, width;
     char s[10];
     
     g_return_if_fail(SDR_IS_WATERFALL(widget));
@@ -97,35 +94,25 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     // chain up so we even *have* the size;
     GTK_WIDGET_CLASS(parent_class)->realize(widget);
 
-    // save width and height to clamp rendering size
-    // this just segfaults
-    //gtk_widget_get_allocation(widget, allocation);
-    //width = allocation->width;
-    //wf->width = width;
-    //wf->wf_height = allocation->height - SCALE_HEIGHT;
-
-    // do it the non-Gtk3-friendly way
     width = widget->allocation.width;
     wf->width = width;
-    wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
+    wf->height = widget->allocation.height;
 
 
     // FIXME we do this a lot, maybe it should be a function
     // maybe we don't need it, since we poke the tuning adjustment  
     priv->cursor_pos = width * (0.5+(gtk_adjustment_get_value(wf->tuning)/wf->sample_rate)); 
     // FIXME investigate cairo surfaces and speed
-    wf->pixmap = gdk_pixmap_new(gtk_widget_get_window(widget), width, wf->wf_height, -1);
+    wf->pixmap = gdk_pixmap_new(gtk_widget_get_window(widget), width, wf->height, -1);
     
     // clear the waterfall pixmap to black
     // not sure if there's a better way to do this
     cr = gdk_cairo_create (wf->pixmap);
-    cairo_rectangle(cr, 0, 0, width, wf->wf_height);
+    cairo_rectangle(cr, 0, 0, width, wf->height);
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_paint(cr);
     cairo_destroy(cr);
-    
-    sdr_waterfall_set_scale(widget, wf->centre_freq);
-    
+
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
     gtk_adjustment_value_changed(wf->tuning);
@@ -137,8 +124,6 @@ static void sdr_waterfall_unrealize(GtkWidget *widget) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     
     g_object_unref(wf->pixmap); // we should definitely have a pixmap
-    if (wf->scale) // we might not have a scale
-        g_object_unref(wf->scale);
 
     g_mutex_free(priv->mutex);
     GTK_WIDGET_CLASS(parent_class)->unrealize(widget);
@@ -151,9 +136,6 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->tuning);   // FIXME - get from *widget?
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
-    // need to update the filter positions too
-    //priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
-    //priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
     sdr_waterfall_filter_cursors(wf);
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
@@ -164,7 +146,6 @@ static void sdr_waterfall_lowpass_changed(GtkWidget *widget, gpointer *p) {
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->lp_tune);
     sdr_waterfall_filter_cursors(wf);
-    //priv->lp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -174,7 +155,6 @@ static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->hp_tune);
     sdr_waterfall_filter_cursors(wf);
-    //priv->hp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -205,47 +185,6 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
         G_CALLBACK (sdr_waterfall_highpass_changed), wf);
     return GTK_WIDGET(wf);
     
-}
-
-void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
-    // draw the scale to a handy pixmap
-    SDRWaterfall *wf = SDR_WATERFALL(widget);
-    gint width = wf->width;
-    cairo_t *cr;
-    gint i, j, scale;
-    gchar s[10];
-    
-    wf->centre_freq = centre_freq;
-    
-    if (!wf->scale) wf->scale = gdk_pixmap_new(gtk_widget_get_window(widget), width, SCALE_HEIGHT, -1);
-    
-    cr = gdk_cairo_create(wf->scale);
-    cairo_rectangle(cr, 0, 0, width, SCALE_HEIGHT);
-    cairo_clip(cr);
-    
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_paint(cr);
-    cairo_set_source_rgb(cr, 1, 0, 0);
-    cairo_move_to(cr, 0, 0);
-    cairo_line_to(cr, width, 0);
-    cairo_stroke(cr);
-    cairo_set_line_width(cr, 1);
-    
-    scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
-    
-    for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
-        j = width * (0.5+((double)i/wf->sample_rate));
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_move_to(cr, 0.5+j, 0);
-        cairo_line_to(cr, 0.5+j, 8);
-        cairo_stroke(cr);
-        cairo_move_to(cr, j-10, 18);
-        cairo_set_source_rgb(cr, .75, .75, .75);
-        sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
-        cairo_show_text(cr,s);
-    }
-    cairo_destroy(cr);
- 
 }
 
 static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *event) {
@@ -398,24 +337,20 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     int width = wf->width;
-    int height = wf->wf_height;
+    int height = wf->height;
     int cursor;
     
     cairo_t *cr = gdk_cairo_create (gtk_widget_get_window(widget));
-    
-    if (wf->scale) {    // might not have a scale
-        gdk_cairo_set_source_pixmap(cr, wf->scale, 0, height);
-        cairo_paint(cr);
-    }
-    
+
     // clip region is waterfall size
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_clip(cr);
 
+	// paint the waterfall
     g_mutex_lock(priv->mutex);
-	gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, -priv->scroll_pos);
+	gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, -priv->scroll_pos); // top half
 	cairo_paint(cr);
-	gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, height-priv->scroll_pos);
+	gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, height-priv->scroll_pos); // bottom half
 	cairo_paint(cr);
     g_mutex_unlock(priv->mutex);
 
@@ -486,7 +421,7 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
     g_mutex_unlock(priv->mutex);
 
     priv->scroll_pos++;
-    if (priv->scroll_pos >= wf->wf_height) priv->scroll_pos = 0;
+    if (priv->scroll_pos >= wf->height) priv->scroll_pos = 0;
 
     cairo_surface_destroy(s_row);
     cairo_destroy(cr);
