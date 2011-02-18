@@ -57,7 +57,6 @@ static void sdr_waterfall_init (SDRWaterfall *wf) {
     priv->prelight = P_NONE;
     priv->drag = P_NONE;
     priv->scroll_pos = 0;
-    wf->centre_freq = 0;
 }
 
 void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
