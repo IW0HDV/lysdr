@@ -55,6 +55,7 @@ struct _SDRWaterfall {
 
     gint width;
     gint wf_height;
+    gint wf_width;
     
     gint sample_rate;
     gint centre_freq;
@@ -91,6 +92,7 @@ G_END_DECLS
 #define WITHIN(x, p) (x-1 > p-LOOSE) && (x-1 < p + LOOSE)
 
 #define SCALE_HEIGHT 24
+#define SCALE_WIDTH 24
 #define SCALE_TICK 5000
 
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size);

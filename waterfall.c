@@ -111,10 +111,14 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     //wf->wf_height = allocation->height - SCALE_HEIGHT;
 
     // do it the non-Gtk3-friendly way
+    /*
     width = widget->allocation.width;
     wf->width = width;
     wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
-
+	*/
+	width = widget->allocation.width;
+	wf->wf_width = widget->allocation.width - SCALE_WIDTH;
+	wf->wf_height = widget->allocation.height;
 
     // FIXME we do this a lot, maybe it should be a function
     // maybe we don't need it, since we poke the tuning adjustment  
@@ -130,7 +134,8 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     cairo_paint(cr);
     cairo_destroy(cr);
     
-    sdr_waterfall_set_scale(widget, wf->centre_freq);
+    // FIXME hide scale
+    //sdr_waterfall_set_scale(widget, wf->centre_freq);
     
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
@@ -403,7 +408,7 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
-    int width = wf->width;
+    int width = wf->wf_width;
     int height = wf->wf_height;
     int cursor;
     
@@ -419,12 +424,16 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_clip(cr);
 
     g_mutex_lock(priv->mutex);
-	gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, -priv->scroll_pos);
+	//gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, -priv->scroll_pos);
+	gdk_cairo_set_source_pixmap(cr, wf->pixmap, -priv->scroll_pos, 0);
 	cairo_paint(cr);
-	gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, height-priv->scroll_pos);
+	//gdk_cairo_set_source_pixmap(cr, wf->pixmap, 0, height-priv->scroll_pos);
+	gdk_cairo_set_source_pixmap(cr, wf->pixmap, width - priv->scroll_pos, 0);
 	cairo_paint(cr);
     g_mutex_unlock(priv->mutex);
 
+
+	/*
     // cursor is translucent when "off", opaque when prelit
     cursor = priv->cursor_pos;
     if (priv->prelight == P_TUNING) {
@@ -467,6 +476,8 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_line_to(cr, 0.5 + priv->hp_pos-1, height);
     cairo_stroke(cr);
 
+*/
+
     cairo_destroy (cr);
 
     return FALSE;
@@ -481,18 +492,18 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
     cairo_surface_t *s_row = cairo_image_surface_create_for_data (
         row,
         CAIRO_FORMAT_RGB24,
+		1,
         wf->fft_size,
-        1,
-        (4*wf->fft_size)
+		4
     );
     
     g_mutex_lock(priv->mutex);
-    cairo_set_source_surface (cr, s_row, 0, priv->scroll_pos);
+    cairo_set_source_surface (cr, s_row, priv->scroll_pos,0);
     cairo_paint(cr);
     g_mutex_unlock(priv->mutex);
 
     priv->scroll_pos++;
-    if (priv->scroll_pos >= wf->wf_height) priv->scroll_pos = 0;
+    if (priv->scroll_pos >= wf->wf_width) priv->scroll_pos = 0;
 
     cairo_surface_destroy(s_row);
     cairo_destroy(cr);

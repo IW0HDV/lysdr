@@ -61,7 +61,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	for(i=0; i<FFT_SIZE; i++) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
-		z = fft->out[p];	 // contains the FFT data 
+		z = fft->out[FFT_SIZE-p];	 // contains the FFT data 
 		y=6*cabs(z);
 		y = CLAMP(y , 0, 1.0);
 		colour = colourmap[(int)(255*y)];
@@ -215,7 +215,7 @@ void gui_display(sdr_data_t *sdr)
 	// 20m  = 14075000
 	// 15m  = 21045000
 	SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
-	gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
+	gtk_widget_set_size_request(wfdisplay, 1000, FFT_SIZE);
 	gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	

@@ -27,7 +27,7 @@
 #include <fftw3.h>
 #include "filter.h"
 
-#define FFT_SIZE 1024
+#define FFT_SIZE 800
 #define FIR_SIZE 1024
 #define MAX_FIR_LEN 8*4096
 
