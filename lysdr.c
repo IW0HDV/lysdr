@@ -22,6 +22,8 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include "config.h"
+
 
 #include "sdr.h"
 #include "audio_jack.h"
@@ -105,7 +107,7 @@ int main(int argc, char *argv[]) {
 	GOptionContext *context;
 
 
-	printf("lysdr starting\n");
+	printf("lysdr %s starting\n", VERSION);
 	
 	// get the Gtk threads support going
 	if(!g_thread_supported())
