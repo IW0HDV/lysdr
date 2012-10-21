@@ -128,7 +128,9 @@ int main(int argc, char *argv[]) {
 
 	// create a new SDR, and set up the jack client
 	sdr = sdr_new(fft_size);
-	audio_start(sdr);
+	//audio_start(sdr);
+    fprintf (stderr, "Starting Perseus....\n");
+    if (perseus_start (sdr)) exit (255);
 
 	// define a filter and configure a default shape
 	sdr->filter = filter_fir_new(250, sdr->size);
@@ -136,7 +138,8 @@ int main(int argc, char *argv[]) {
 	
 	// hook up the jack ports and start the client  
 	fft_setup(sdr);
-	audio_connect(sdr, connect_input, connect_output);
+	//audio_connect(sdr, connect_input, connect_output);
+	perseus_connect(sdr, connect_input, connect_output);
 	
 	sdr->centre_freq = centre_freq;
 

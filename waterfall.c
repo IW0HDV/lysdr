@@ -54,8 +54,6 @@ static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *
 static gboolean sdr_waterfall_scroll(GtkWidget *widget, GdkEventScroll *event);
 static void sdr_waterfall_realize(GtkWidget *widget);
 static void sdr_waterfall_unrealize(GtkWidget *widget);
-void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value);
-void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
 
 static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);

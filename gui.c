@@ -49,7 +49,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	int i, j, p, hi;
 	gdouble y;
 	
-	gdouble wi, wq;
+	gdouble wi; //, wq;
 	
 	fftw_complex z;
 	guchar data[sdr->fft_size*4];
@@ -115,16 +115,16 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
 }
 
 static void filter_clicked(GtkWidget *widget, gpointer psdr) {
-	sdr_data_t *sdr = (sdr_data_t *) psdr;
+	//sdr_data_t *sdr = (sdr_data_t *) psdr;
 	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	switch (state) {
 		case 0:
-			sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
-			sdr_waterfall_set_highpass(wfdisplay, 300.0f);
+			sdr_waterfall_set_lowpass(SDR_WATERFALL(wfdisplay), 3400.0f);
+			sdr_waterfall_set_highpass(SDR_WATERFALL(wfdisplay), 300.0f);
 			break;
 		case 1:
-			sdr_waterfall_set_lowpass(wfdisplay, 1500.0f);
-			sdr_waterfall_set_highpass(wfdisplay, 500.0f);
+			sdr_waterfall_set_lowpass(SDR_WATERFALL(wfdisplay), 1500.0f);
+			sdr_waterfall_set_highpass(SDR_WATERFALL(wfdisplay), 500.0f);
 			break;
 	}
 }
@@ -180,12 +180,12 @@ static void wfunc_changed(GtkWidget *widget, gpointer psdr) {
 void gui_display(sdr_data_t *sdr, gboolean horizontal)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	GtkWidget *waterfall;
+	//GtkWidget *waterfall;
 	GtkWidget *vbox;
-	GtkWidget *tuneslider;
+	//GtkWidget *tuneslider;
 	GtkWidget *hbox;
-	GtkWidget *lpslider;
-	GtkWidget *hpslider;
+	//GtkWidget *lpslider;
+	//GtkWidget *hpslider;
 	GtkWidget *filter_combo;
 	GtkWidget *mode_combo;
 	GtkWidget *agc_combo;

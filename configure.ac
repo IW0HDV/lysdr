@@ -2,7 +2,7 @@ AC_PREREQ([2.67])
 AC_INIT([lysdr], 
         [m4_esyscmd([./git-version-gen .tarball-version])], 
         [BUG-REPORT-ADDRESS])
-AC_CONFIG_MACRO_DIR([m4])
+dnl AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 dnl kernel style compile messages
 dnl m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -26,6 +26,10 @@ AC_SEARCH_LIBS([jack_client_open], [jack],[have_jack=yes])
 AC_SEARCH_LIBS([pthread_create], [pthread],[have_pthreads=yes])
 AM_PATH_GTK_2_0([2.10.0],,AC_MSG_ERROR([Gtk+ 2.10.0 or higher required.]))
 AC_SEARCH_LIBS([fftw_malloc], [fftw3],[have_fftw3=yes],AC_MSG_ERROR([libfftw3 required.]))
+AC_SEARCH_LIBS([perseus_init], [perseus-sdr],[have_perseus=yes],AC_MSG_ERROR([perseus-sdr required.]))
+AC_SEARCH_LIBS([Pa_Initialize], [portaudio],[have_portaudio=yes],AC_MSG_ERROR([portaudio required.]))
+AC_SEARCH_LIBS([src_new], [samplerate],[have_samplerate=yes],AC_MSG_ERROR([samplerate required.]))
+
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdlib.h string.h complex.h])

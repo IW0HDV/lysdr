@@ -109,6 +109,9 @@ void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value);
 void sdr_waterfall_update(GtkWidget *widget, guchar *row);
 void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq);
 void sdr_waterfall_filter_cursors(SDRWaterfall *wf);
+void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value);
+void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
+
 #endif /* __WATERFALL_H */
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
