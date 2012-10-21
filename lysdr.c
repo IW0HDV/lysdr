@@ -38,6 +38,7 @@ static gboolean horizontal = FALSE;
 static gint centre_freq = 0;
 static gint fft_size = 1024;
 static gchar *tuning_hook = NULL;
+static gint bandwidth = 0;
 
 static GOptionEntry opts[] = 
 {
@@ -47,6 +48,7 @@ static GOptionEntry opts[] =
 	{ "freq", 'f', 0, G_OPTION_ARG_INT, &centre_freq, "Set the centre frequency in Hz", "FREQUENCY" },
 	{ "fft-size", 'F', 0, G_OPTION_ARG_INT, &fft_size, "Set the FFT size (default=1024)", "FFT_SIZE" },
 	{ "tuning-hook", 0, 0, G_OPTION_ARG_STRING, &tuning_hook, "Program to run when tuned frequency changes", "PROGRAM" },
+	{ "bandwidth", 'b', 0, G_OPTION_ARG_INT, &bandwidth, "Bandwith for DDC Perseus receiver", "BANDWIDTH" },
 	{ NULL }
 };
 
@@ -128,9 +130,13 @@ int main(int argc, char *argv[]) {
 
 	// create a new SDR, and set up the jack client
 	sdr = sdr_new(fft_size);
-	//audio_start(sdr);
-    fprintf (stderr, "Starting Perseus....\n");
-    if (perseus_start (sdr)) exit (255);
+
+	if (bandwidth==0) {
+		audio_start(sdr);
+	} else {
+		g_print ("Starting Perseus....\n");
+		if (perseus_start (sdr, bandwidth)) exit (255);
+	}
 
 	// define a filter and configure a default shape
 	sdr->filter = filter_fir_new(250, sdr->size);
@@ -138,10 +144,16 @@ int main(int argc, char *argv[]) {
 	
 	// hook up the jack ports and start the client  
 	fft_setup(sdr);
-	//audio_connect(sdr, connect_input, connect_output);
-	perseus_connect(sdr, connect_input, connect_output);
+	if (bandwidth==0) {
+		audio_connect(sdr, connect_input, connect_output);
+	} else {
+		perseus_connect(sdr, connect_input, connect_output);
+	}
 	
 	sdr->centre_freq = centre_freq;
+	if (bandwidth!=0) {
+		perseus_update_freq (sdr); 
+	}
 
 	gui_display(sdr, horizontal);
 
@@ -150,7 +162,11 @@ int main(int argc, char *argv[]) {
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
 
 	gtk_main();
-	audio_stop(sdr);
+	if (bandwidth==0) {
+		audio_stop(sdr);
+	} else {
+		perseus_stop(sdr);
+	}
 	filter_fir_destroy(sdr->filter);
 	fft_teardown(sdr);
 	

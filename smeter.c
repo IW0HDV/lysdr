@@ -30,7 +30,6 @@ static void sdr_smeter_size_request(GtkWidget *widget, GtkRequisition *requisiti
 
 static void sdr_smeter_class_init (SDRSMeterClass *class) {
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
-	GObjectClass *gobject_class = G_OBJECT_CLASS (class);
 	parent_class = gtk_type_class(GTK_TYPE_DRAWING_AREA);
 
 	widget_class->expose_event = sdr_smeter_expose;
@@ -85,6 +84,8 @@ static gboolean sdr_smeter_expose(GtkWidget *widget, GdkEventExpose *event) {
 	cairo_fill(cr);
 
 	cairo_destroy(cr);
+
+    return 1;
 }
 
 void sdr_smeter_set_level(SDRSMeter *sm, gdouble level) {
