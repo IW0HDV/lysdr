@@ -72,6 +72,8 @@ typedef struct {
 	guint size;  // periodsize
 	guint sample_rate;	// samplerate
 	guint wfunc; // selected windowing function
+	guint wfpalette; // selected palette for waterfall colours
+    gdouble wfcontrast;
 	
 } sdr_data_t;
 

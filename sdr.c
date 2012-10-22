@@ -44,6 +44,8 @@ sdr_data_t *sdr_new(gint fft_size) {
 	sdr->mode = SDR_LSB;
 	sdr->agc_speed = 0.005;
 	sdr->fft_size = fft_size;
+    sdr->wfpalette = 4;
+	sdr->wfcontrast = 0.9;
 	return sdr; 
 }
 

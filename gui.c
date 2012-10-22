@@ -23,10 +23,14 @@
 #include <complex.h> 
 #include <gtk/gtk.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "sdr.h"
 #include "waterfall.h"
 #include "smeter.h"
+
+#include "winrad_palette.h"
+
 
 extern sdr_data_t *sdr;
 
@@ -44,6 +48,7 @@ gint32 colourmap[] = {
 gint32 colourmap[] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x08052800, 0x0b073800, 0x0e084400, 0x0f0a4f00, 0x110a5700, 0x120b5e00, 0x140c6500, 0x150d6a00, 0x150d6f00, 0x170d7400, 0x170e7800, 0x180e7b00, 0x190e7d00, 0x180f7f00, 0x190f7e00, 0x190f7f00, 0x180f8000, 0x190f8000, 0x190f8000, 0x190f8100, 0x19108200, 0x190f8200, 0x19108200, 0x19108400, 0x19108300, 0x1a0f8400, 0x1a0f8400, 0x1a108500, 0x1a108500, 0x1a0f8600, 0x1a108700, 0x1a108700, 0x1a0f8700, 0x1a108800, 0x1a108700, 0x1a108800, 0x1a108900, 0x1b108900, 0x1b108900, 0x1b108900, 0x1a108a00, 0x1b118a00, 0x1a108a00, 0x1b118b00, 0x1b108a00, 0x1b108b00, 0x1b108c00, 0x1b118c00, 0x1b108c00, 0x1b118c00, 0x1b108d00, 0x1b108c00, 0x1b118d00, 0x1b108d00, 0x1c108d00, 0x1c108e00, 0x1c118e00, 0x1b118e00, 0x1c118e00, 0x1b118f00, 0x1c108f00, 0x1b118e00, 0x1b108f00, 0x1c118f00, 0x1c108f00, 0x1c119000, 0x1c119000, 0x1c119000, 0x1c119000, 0x1c118f00, 0x1c119000, 0x1c119000, 0x1c119100, 0x1c119100, 0x1c119000, 0x1c119100, 0x1c119100, 0x1c119000, 0x1c119000, 0x1c119100, 0x1c119100, 0x1c119100, 0x1c119100, 0x1c119000, 0x1c119100, 0x1c119100, 0x1c119100, 0x1c119100, 0x1c119100, 0x1e118f00, 0x1f118f00, 0x21118d00, 0x23118c00, 0x26118b00, 0x27118a00, 0x29118800, 0x2a118700, 0x2c108600, 0x2e118500, 0x30118400, 0x31108300, 0x33108200, 0x35108000, 0x37117f00, 0x39107e00, 0x3b107d00, 0x3c107c00, 0x3e107a00, 0x40107900, 0x42107900, 0x440f7700, 0x45107600, 0x47107500, 0x49107400, 0x4b107200, 0x4c107200, 0x4e0f7000, 0x510f6f00, 0x52106e00, 0x54106d00, 0x560f6b00, 0x58106b00, 0x59106900, 0x5b0f6800, 0x5c106700, 0x5e0f6600, 0x600f6400, 0x620f6400, 0x640f6200, 0x660f6100, 0x670f6000, 0x690f5e00, 0x6a0f5d00, 0x6d0f5d00, 0x6f0f5b00, 0x710f5a00, 0x720f5900, 0x740e5800, 0x760e5700, 0x770f5600, 0x790e5500, 0x7b0e5300, 0x7d0e5200, 0x7e0e5100, 0x810e5000, 0x820e4f00, 0x840e4d00, 0x870e4b00, 0x8a0e4900, 0x8d0e4700, 0x900d4500, 0x930e4300, 0x960d4200, 0x990e4000, 0x9c0d3e00, 0x9f0e3c00, 0xa10e3a00, 0xa40d3800, 0xa70d3700, 0xaa0d3500, 0xad0d3300, 0xb00d3100, 0xb30d2f00, 0xb60d2d00, 0xb90d2b00, 0xbc0d2a00, 0xbe0c2800, 0xc10c2600, 0xc40d2400, 0xc70c2200, 0xca0c2000, 0xcd0c1e00, 0xd00c1c00, 0xd30b1a00, 0xd50c1800, 0xd80c1600, 0xdb0b1500, 0xde0c1300, 0xe10c1100, 0xe40b0f00, 0xe70b0d00, 0xea0b0b00, 0xeb100a00, 0xec170a00, 0xed1d0900, 0xee240800, 0xef2a0800, 0xf1310700, 0xf1370700, 0xf23d0600, 0xf4440600, 0xf44a0600, 0xf54e0500, 0xf5500500, 0xf6540500, 0xf7570400, 0xf75b0400, 0xf85f0400, 0xf9620300, 0xfa650300, 0xfa690200, 0xfa6c0300, 0xfb700200, 0xfb730200, 0xfc770200, 0xfc7a0200, 0xfe7d0100, 0xfd800100, 0xfe840000, 0xff870000, 0xfe8e0300, 0xfd940700, 0xfc9a0b00, 0xfba10d00, 0xfaa81100, 0xf9ae1500, 0xf8b51900, 0xf7bb1c00, 0xf6c11f00, 0xf5c62200, 0xf4cb2500, 0xf4d12700, 0xf3d52b00, 0xf2db2e00, 0xf1e03100, 0xf0e63300, 0xefeb3700, 0xf0ed4500, 0xf2ef5700, 0xf3f16900, 0xf4f37a00, 0xf6f48b00, 0xf7f59c00, 0xf8f7a700, 0xf9f8b000, 0xf9f9ba00, 0xfaf9c300, 0xfbface00, 0xfcfbd800, 0xfcfce100, 0xfdfdeb00, 0xfefff500, 0xffffff00, 0xffffff00, 
 };
+
 static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 	int i, j, p, hi;
@@ -102,6 +107,149 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	sdr_smeter_set_level(SDR_SMETER(meter), y);
 	return TRUE;
 }
+
+
+static int cmp_gdouble (const void * a, const void * b)
+{
+  gdouble fa = *(gdouble*) a;
+  gdouble fb = *(gdouble*) b;
+  return (fa > fb) - (fa < fb);
+}
+
+
+static int cmp_float (const void * a, const void * b)
+{
+  float fa = *(float*) a;
+  float fb = *(float*) b;
+  return (fa > fb) - (fa < fb);
+}
+
+static gboolean gui_update_waterfall_2 (GtkWidget *widget) {
+
+	int i, j, p, hi;
+	gdouble y;
+	
+	gdouble wi; //, wq;
+	
+	guchar data[sdr->fft_size*4];
+	gint32 colour;
+	fft_data_t *fft= sdr->fft;
+
+	// apply fft window
+	// null window
+	memmove(fft->windowed, fft->samples, sizeof(complex)*(sdr->fft_size));
+
+	//printf("\n-----------------------------\n");
+	for (i=0; i<sdr->fft_size; i++) {
+		//fft->windowed[i] *= 0.42 + 0.5 * cos(2.0f * M_PI * i / FFT_SIZE) + 0.08 * cos(4.0f * M_PI * i / FFT_SIZE);;
+		if (sdr->wfunc == 1) {
+			wi = 0.54 - 0.46 * cos(2.0 * M_PI * i/sdr->fft_size);
+			fft->windowed[i] *= wi + I * wi;
+		}
+		if (sdr->wfunc == 2) {
+			wi = 0.42 - 0.5 * cos(2.0f * M_PI * i / sdr->fft_size) + 0.08 * cos(4.0f * M_PI * i / sdr->fft_size);;
+			fft->windowed[i] *= wi + I * wi;
+		}
+	}
+	
+	fftw_execute(fft->plan);
+	fft->status=EMPTY;
+	fft->index=0;
+
+    //
+    // allocate a vector for FFT power values
+    //
+    float zv  [sdr->fft_size] ;
+    float zvs [sdr->fft_size] ;
+    int   zi  [sdr->fft_size] ;
+
+	hi = sdr->fft_size/2;
+	j=0;
+	for(i=0; i<sdr->fft_size; i++) {
+		p=i;
+		if (p<hi) p=p+hi; else p=p-hi;
+		zv[i] = 10*cabs(fft->out[p]);	 // contains the FFT data 
+		zvs[i] = zv[i];
+	}
+
+    // sort it
+	qsort(zvs, sdr->fft_size, sizeof(float), cmp_float);
+
+	{
+        int x10, x90;
+		float perc10;
+        float perc90;
+        float contrast;
+        float delta;
+
+        // compute the 10th percentile
+        x10 = (int)(sdr->fft_size*25.0/100.0+0.5);
+        perc10 = zvs[x10];
+
+        x90 = (int)(sdr->fft_size*95/100+0.5);
+        perc90 = zvs[x90];
+        //
+        // compute delta
+        //
+        delta = perc90 - perc10;
+      
+
+#if 0
+        printf ( "size: %d  10th percentile(%d): %f, 90th percentile(%d): %f   delta: %f\n", 
+                 sdr->fft_size, 
+                 x10, perc10, x90, perc90, 
+                 delta );
+#endif
+        //
+        // scales all values inside perc10-perc90 to 0-255 range
+        //
+        //contrast = 0.9;
+		contrast = sdr->wfcontrast;
+		for (i=0; i<sdr->fft_size; ++i) {
+			if (zv[i] < perc10)
+				zi[i] = 0;
+			else {
+				if (zv[i] > perc90)
+					zi[i] = 255;
+				else
+//					zv[i] = (int) ((pow ( ((zv[i] - perc10) / delta ), contrast )) * 256);
+//					zi[i] = (int) (((zv[i] - perc10) / delta ) * 256);
+                    zi[i] = (int) ((((zv[i] - perc10) / delta ) * contrast) * 256);
+			}	
+		}
+ 
+//        for i in range (0,size): 
+//          if sd[i] < perc10: 
+//             sd[i]=0
+//          else:
+//             if sd[i] > perc90: 
+//                sd[i]=255
+//             else:
+//                sd[i] = pow ( ((sd[i] - perc10) / delta ), contrast ) * 256
+		  
+	}
+
+    PAL *pPal = PaletteTbl [sdr->wfpalette].pPal;
+    
+
+	for (i=0, j=0; i<sdr->fft_size; ++i) {
+		data[j++] = pPal[(int)(zi[i])].r;
+		data[j++] = pPal[(int)(zi[i])].g;
+		data[j++] = pPal[(int)(zi[i])].b;
+		data[j++] = 255;
+	} 
+	sdr_waterfall_update(widget, data);
+
+    // S-METER calculations
+	y = (2000-sdr->agc_gain)/2000;
+	if (y<0) y = 0;
+	if (y>1) y = 1;
+	y=y*y;
+	sdr_smeter_set_level(SDR_SMETER(meter), y);
+
+	return TRUE;
+}
+
 
 static void tuning_changed(GtkWidget *widget, gpointer psdr) {
 	sdr_data_t *sdr;
@@ -177,6 +325,28 @@ static void wfunc_changed(GtkWidget *widget, gpointer psdr) {
 }
 
 
+static void wfpalette_changed(GtkWidget *widget, gpointer psdr) {
+	sdr_data_t *sdr = (sdr_data_t *) psdr;
+
+	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	sdr->wfpalette = state;
+
+    printf ("PALETTE: %d\n", state);
+}
+
+static void wfcontrast_changed(GtkWidget *widget, gpointer psdr) {
+	sdr_data_t *sdr = (sdr_data_t *) psdr;
+
+	//gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+    gdouble current_value = gtk_range_get_value(GTK_RANGE(widget));
+	sdr->wfcontrast = current_value;
+
+    printf ("CONTRAST: %g\n", current_value);
+}
+
+
+
+
 void gui_display(sdr_data_t *sdr, gboolean horizontal)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -190,6 +360,8 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	GtkWidget *mode_combo;
 	GtkWidget *agc_combo;
 	GtkWidget *wfunc_combo;
+	GtkWidget *wfpalette_combo;
+    GtkWidget *wfcontrast_scale;
 	
 	float tune_max;
 	
@@ -247,6 +419,22 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 
+	wfpalette_combo = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfpalette_combo), "Log");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfpalette_combo), "Linrad");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfpalette_combo), "New");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfpalette_combo), "Hrn");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfpalette_combo), "FullDyn");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfpalette_combo), "FullDyn2");
+	gtk_box_pack_start(GTK_BOX(hbox), wfpalette_combo, TRUE, TRUE, 0);
+	gtk_signal_connect(GTK_OBJECT(wfpalette_combo), "changed", G_CALLBACK(wfpalette_changed), sdr);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(wfpalette_combo), sdr->wfpalette);
+
+    wfcontrast_scale = gtk_hscale_new_with_range (0.0, 1.0, 0.1);
+	gtk_box_pack_start(GTK_BOX(hbox), wfcontrast_scale, TRUE, TRUE, 0);
+	gtk_signal_connect(GTK_OBJECT(wfcontrast_scale), "value_changed", G_CALLBACK(wfcontrast_changed), sdr);
+    gtk_range_set_value ( GTK_OBJECT(wfcontrast_scale), sdr->wfcontrast );
+
 	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
 	// common softrock frequencies
 	// 160m =  1844250
@@ -273,7 +461,7 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 
 	// connect handlers
 	// FIXME - determine minimum update rate from jack latency
-	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall_2, (gpointer)wfdisplay);
 	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
