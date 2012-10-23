@@ -235,6 +235,16 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
 
 }
 
+int text_width_in_pix (cairo_t *cr, const char *txt)
+{
+   cairo_text_extents_t te;
+
+    cairo_text_extents (cr, txt, &te);
+
+   return (int)(te.width)+1 ;
+
+}
+
 void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
     // draw the scale to a handy pixmap
     SDRWaterfall *wf = SDR_WATERFALL(widget);
@@ -270,18 +280,42 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 	cairo_stroke(cr);
 	cairo_set_line_width(cr, 1);
 
-	scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
+	scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;  // scale extension
+
+    int ltx = 0; // keep the x.coord where the last scale text was stroke
 
 	for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
 	    j = width * (0.5+((double)i/wf->sample_rate));
-	    cairo_set_source_rgb(cr, 1, 0, 0);
-	    cairo_move_to(cr, 0.5+j, 0);
-	    cairo_line_to(cr, 0.5+j, 8);
-	    cairo_stroke(cr);
-	    cairo_move_to(cr, j-10, 18);
-	    cairo_set_source_rgb(cr, .75, .75, .75);
-	    sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
-	    cairo_show_text(cr,s);
+        
+	    snprintf(s, sizeof(s), "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
+
+        int w = text_width_in_pix (cr, s); // compute the text width in pixels
+        printf ("width= %d x= %d last x: %d", (int)w, j, ltx);
+
+        if ((j - ltx) > w ) {
+            // text is not overlapping, print it
+
+			cairo_set_source_rgb(cr, 1, 0, 0); 
+			cairo_set_line_width(cr, 2);  // thick mark
+			cairo_move_to(cr, 0.5+j, 0);
+			cairo_line_to(cr, 0.5+j, 8);
+			cairo_stroke(cr);
+			cairo_set_line_width(cr, 1);  // restore line tickness to 1 pixel
+
+    	    cairo_set_source_rgb(cr, .75, .75, .75);
+ 			cairo_move_to(cr, j-(w/2), 18); // move to right text position depending on real width
+            cairo_show_text(cr,s);
+            printf ("*");
+            ltx = j; // update position of text
+
+        } else {
+            // text overlaps, draws only a faint tick
+			cairo_set_source_rgb(cr, 1, 0, 0);
+			cairo_move_to(cr, 0.5+j, 0);
+			cairo_line_to(cr, 0.5+j, 4);       // intermediate positon, height is half 
+			cairo_stroke(cr);
+		}
+        printf (" \n");
 	}
 	break;
     case WF_O_HORIZONTAL:
@@ -307,7 +341,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 	    cairo_move_to(cr, 12, j+4);
 	    cairo_set_source_rgb(cr, .75, .75, .75);
 	    sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
-	    cairo_show_text(cr,s);
+	    //cairo_show_text(cr,s);
 	}
 	break;
     }
@@ -509,7 +543,7 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_stroke(cr);
 
     // filter cursor
-    cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
+    cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.50);
     cairo_rectangle(cr,
 		    wf_rectangle(MIN(priv->hp_pos, priv->lp_pos), 0,
 				 abs(priv->lp_pos - priv->hp_pos), height));
