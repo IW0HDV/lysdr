@@ -52,8 +52,8 @@ static void make_impulse(double complex fir_imp[], float sample_rate, int taps, 
 		//w=1; // No window
 		z *= w; 
 		z *= 2*cexp(-1*I * tune * k);
-	if (IS_ALMOST_DENORMAL(creal(z))) { z = I * cimag(z); }
-	if (IS_ALMOST_DENORMAL(cimag(z))) { z = creal(z); }
+		if (IS_ALMOST_DENORMAL(creal(z))) { z = I * cimag(z); }
+		if (IS_ALMOST_DENORMAL(cimag(z))) { z = creal(z); }
 		fir_imp[i] = z;
 		i++;
 	}
@@ -97,29 +97,6 @@ void filter_fir_set_response(filter_fir_t *filter, int sample_rate, float bw, fl
 	} 
 }
 
-void filter_iir_set_response(filter_iir_t *filter, int sample_rate, float cutoff, float q) {
-	// create the coefficients for an IIR filter
-	gfloat w0, alpha;
-	// lowpass
-	w0 = 2 * M_PI * cutoff/sample_rate;
-	alpha = sin(w0)/(2*q);
-	filter->b0 = (1-cos(w0))/2;
-	filter->b1 =  1-cos(w0);
-	filter->b2 = (1-cos(w0))/2;
-	filter->a0 = 1 + alpha;
-	filter->a1 = -2*cos(w0);
-	filter->a2 = 1 - alpha;
-	/*
-	// highpass
-	filter->b0 =  (1 + cos(w0))/2
-    filter->b1 = -(1 + cos(w0))
-    filter->b2 =  (1 + cos(w0))/2
-    filter->a0 =   1 + alpha
-    filter->a1 =  -2*cos(w0)
-    filter->a2 =   1 - alpha
-	*/
-}
-
 void filter_fir_process(filter_fir_t *filter, double complex *samples) {
 	// Perform an FIR filter on the data "in place"
 	// this routine is slow and has a horrible hack to avoid denormals
@@ -154,35 +131,4 @@ void filter_fir_process(filter_fir_t *filter, double complex *samples) {
 	filter->index = index;
 }
 
-void filter_hilbert(gint phase, double complex *samples, gint taps) {
-	// Hilbert transform, shamelessly nicked from swh-plugins
-	// taps needs to be a multiple of D_SIZE
-	// returns I and Q, with Q rotated through 90 degrees
-	// 100 samples delay
-	gint i, j, dptr = 0;
-	gfloat hilb;
-	for (i = 0; i < taps; i++) {
-	  delay[dptr] = samples[i];
-	  hilb = 0.0f;
-	  for (j = 0; j < NZEROS/2; j++) {
-	    hilb += (phase*xcoeffs[j] * cimag(delay[(dptr - j*2) & (D_SIZE - 1)]));
-	  }
-	  samples[i] = creal(delay[(dptr-99)& (D_SIZE-1)]) + I * hilb;
-	  dptr = (dptr + 1) & (D_SIZE - 1);
-	}
-
-}
-
-void filter_iir_process(filter_iir_t *filter, gfloat *samples) {
-	// run a simple biquad IIR filter
-	int i;
-	gfloat y, x;
-
-	for (i = 0; i < filter->size; i++) {
-		x = samples[i];
-		y = (filter->b0/filter->a0)*x + (filter->b1/filter->a0)*filter->x1 + (filter->b2/filter->a0)*filter->x2 - (filter->a1/filter->a0)*filter->y1 - (filter->a2/filter->a0)*filter->y2;
-		filter->y2 = filter->y1; filter->y1 = y;
-		filter->x2 = filter->x1; filter->x1 = x;
-	}
-}
 

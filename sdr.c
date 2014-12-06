@@ -1,4 +1,5 @@
-/*  lysdr Software Defined Radio
+/* vim: set noexpandtab ai ts=4 sw=4 tw=4:
+    lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
 	
 	sdr.c
@@ -88,42 +89,21 @@ int sdr_process(sdr_data_t *sdr) {
 		sdr->loVector *= sdr->loPhase;
 	}
 
-/*
-	// demodulate by performing a Hilbert transform and then summing real and imaginary
-
-	switch(sdr->mode) {
-		case SDR_LSB:
-			filter_hilbert(-1, sdr->iqSample, size);
-			break;
-		case SDR_USB:
-			filter_hilbert(1, sdr->iqSample, size);
-			break;
-	} 
-
-	for (i=0; i < size; i++) {
-		 y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-		sdr->output[i] = y;
-	}
-
-	//filter_iir_process(sdr->filter, sdr->output);
-
-
-	
-*/
 	filter_fir_process(sdr->filter, sdr->iqSample);
 
-
 	switch(sdr->mode) {
 		case SDR_LSB:
-	for (i=0; i < size; i++) {
-		 y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-		sdr->output[i] = y;
-	}			break;
+			for (i=0; i < size; i++) {
+				 y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
+				sdr->output[i] = y;
+			}
+		break;
 		case SDR_USB:
-	for (i=0; i < size; i++) {
-		 y = creal(sdr->iqSample[i])-cimag(sdr->iqSample[i]);
-		sdr->output[i] = y;
-	}			break;
+			for (i=0; i < size; i++) {
+				y = creal(sdr->iqSample[i])-cimag(sdr->iqSample[i]);
+				sdr->output[i] = y;
+			}
+		break;
 	} 	
 
 	// apply some AGC here
@@ -132,7 +112,6 @@ int sdr_process(sdr_data_t *sdr) {
 		if (agc_peak < y) agc_peak = y;
 
 	}
-	
 
 	if (agc_peak == 0) agc_peak = 0.00001;	// don't be zero, in case we have digital silence
 	y = agc_peak * agc_gain;  // y is the peak level scaled by the current gain
@@ -182,4 +161,3 @@ void fft_teardown(sdr_data_t *sdr) {
 	free(sdr->fft);
 }
 
-/* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

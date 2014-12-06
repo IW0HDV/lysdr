@@ -1,4 +1,5 @@
-/*  lysdr Software Defined Radio
+/* vim: set noexpandtab ai ts=4 sw=4 tw=4:
+    lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
 	
 	filter.h
@@ -26,16 +27,6 @@
 #ifndef __FILTER_H
 #define __FILTER_H
 
-// IIR filter defs
-typedef struct {
-	// coefficients
-	gfloat alpha, w0, b0, b1, b2, a0, a1, a2;
-	// taps
-	gfloat x1, x2, y1, y2;
-	gint size;
-} filter_iir_t;
-    
-
 // FIR filter defs
 typedef struct {
 	double complex *impulse;
@@ -52,7 +43,5 @@ filter_fir_t *filter_fir_new(int taps, int size);
 void filter_fir_destroy(filter_fir_t *filter);
 void filter_fir_set_response(filter_fir_t *filter, int sample_rate, float bw, float centre);
 void filter_fir_process(filter_fir_t *filter, double complex *samples);
-void filter_hilbert(gint phase, double complex *samples, gint taps);
 #endif
 
-/* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

@@ -48,6 +48,9 @@ static GOptionEntry opts[] =
 	{ NULL }
 };
 
+#if 0
+// hook stuff will be replaced by hamlib
+
 static void hook_setup(gpointer data) {
 	GString *s = g_string_new("");
 	gint tuning = (gint)gtk_adjustment_get_value(GTK_ADJUSTMENT(sdr->tuning));
@@ -100,13 +103,12 @@ static void tuning_changed(GtkAdjustment *adjustment, gpointer data) {
 	tuning_hook_timeout = g_timeout_add(100, run_hook,	(gpointer)tuning_hook);
 }
 
+#endif
+
 int main(int argc, char *argv[]) {
 	GError *error = NULL;
 	GOptionContext *context;
 
-
-	printf("lysdr starting\n");
-	
 	gdk_threads_init();
 	gdk_threads_enter();
 
@@ -136,8 +138,10 @@ int main(int argc, char *argv[]) {
 
 	gui_display(sdr, horizontal);
 
+#if 0
+	// hook stuff will be replaced with hamlib
 	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
-
+#endif 
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
 
 	gtk_main();

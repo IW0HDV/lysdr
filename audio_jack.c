@@ -1,4 +1,5 @@
-/*  lysdr Software Defined Radio
+/* vim: set noexpandtab ai ts=4 sw=4 tw=4:
+    lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
 
 	audio_jack.c
@@ -50,7 +51,7 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
 	R = jack_port_get_buffer (R_out, nframes);
 
 	// the SDR expects a bunch of complex samples
-
+	// FIXME make this configurable
 	for(i = 0; i < nframes; i++) {
 	// uncomment whichever is appropriate
 		sdr->iqSample[i] = ii[i] + I * qq[i]; // I on left
@@ -58,7 +59,6 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
 	}
 
 	// actually run the SDR for a frame
-
 	sdr_process(sdr);
 
 	// copy the frames to the output
@@ -168,4 +168,4 @@ int audio_connect(sdr_data_t *sdr, gboolean ci, gboolean co) {
 	return 0;
 }
 
-/* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
+
