@@ -44,66 +44,8 @@ static GOptionEntry opts[] =
 	{ "co", 0, 0, G_OPTION_ARG_NONE, &connect_output, "Autoconnect output to first two jack playback ports", NULL },
 	{ "freq", 'f', 0, G_OPTION_ARG_INT, &centre_freq, "Set the centre frequency in Hz", "FREQUENCY" },
 	{ "fft-size", 'F', 0, G_OPTION_ARG_INT, &fft_size, "Set the FFT size (default=1024)", "FFT_SIZE" },
-	{ "tuning-hook", 0, 0, G_OPTION_ARG_STRING, &tuning_hook, "Program to run when tuned frequency changes", "PROGRAM" },
 	{ NULL }
 };
-
-#if 0
-// hook stuff will be replaced by hamlib
-
-static void hook_setup(gpointer data) {
-	GString *s = g_string_new("");
-	gint tuning = (gint)gtk_adjustment_get_value(GTK_ADJUSTMENT(sdr->tuning));
-
-	g_string_printf(s, "%d", sdr->centre_freq);
-	g_setenv("LYSDR_CENTRE", s->str, TRUE);
-
-	g_string_printf(s, "%d", tuning);
-	g_setenv("LYSDR_OFFSET", s->str, TRUE);
-
-	g_string_printf(s, "%d", sdr->centre_freq + tuning);
-	g_setenv("LYSDR_FREQ", s->str, TRUE);
-
-	switch (sdr->mode) {
-		case SDR_LSB:
-			g_string_printf(s, "LSB");
-			break;
-		case SDR_USB:
-			g_string_printf(s, "USB");
-			break;
-	}
-	g_setenv("LYSDR_MODE", s->str, TRUE);
-
-	g_string_free(s, TRUE);
-}
-
-static gboolean run_hook(gpointer data) {
-	gchar *hook = (gchar *)data;
-
-	if (hook != NULL) {
-		GPid pid;
-		gchar *argv[] = { hook, NULL };
-
-		g_spawn_async(NULL, argv, NULL, 0, hook_setup, NULL, &pid, NULL);
-		g_spawn_close_pid(pid);
-	}
-
-	return FALSE;
-}
-
-static guint tuning_hook_timeout = 0;
-
-static void tuning_changed(GtkAdjustment *adjustment, gpointer data) {
-	if (tuning_hook_timeout) {
-		// Cancel if already scheduled: we want to only run the hook once
-		// the value's settled.
-		g_source_remove(tuning_hook_timeout);
-	}
-
-	tuning_hook_timeout = g_timeout_add(100, run_hook,	(gpointer)tuning_hook);
-}
-
-#endif
 
 int main(int argc, char *argv[]) {
 	GError *error = NULL;
@@ -138,10 +80,6 @@ int main(int argc, char *argv[]) {
 
 	gui_display(sdr, horizontal);
 
-#if 0
-	// hook stuff will be replaced with hamlib
-	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
-#endif 
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
 
 	gtk_main();
