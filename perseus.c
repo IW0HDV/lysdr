@@ -106,7 +106,7 @@ int user_data_callback(void *buf, int buf_size, void *extra)
      // }
 
         // when we have enough samples send them to the clients
-        if(samples==BUFFER_SIZE) {
+        if (samples==BUFFER_SIZE) {
 			int i;
             // send I/Q data to clients
             //fprintf (stderr, "%s: sending data.\n", __FUNCTION__);

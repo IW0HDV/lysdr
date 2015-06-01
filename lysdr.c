@@ -29,6 +29,9 @@
 #include "audio_jack.h"
 #include "filter.h"
 
+#include "perseus.h"
+#include "fdms1.h"
+
 extern void gui_display(sdr_data_t *sdr, gboolean horizontal);  // ugh, there should be a header file for the GUI
 sdr_data_t *sdr;
 
@@ -39,6 +42,8 @@ static gint centre_freq = 0;
 static gint fft_size = 1024;
 static gchar *tuning_hook = NULL;
 static gint bandwidth = 0;
+static gboolean perseus = FALSE;
+static gboolean elad    = FALSE;
 
 static GOptionEntry opts[] = 
 {
@@ -49,6 +54,8 @@ static GOptionEntry opts[] =
 	{ "fft-size", 'F', 0, G_OPTION_ARG_INT, &fft_size, "Set the FFT size (default=1024)", "FFT_SIZE" },
 	{ "tuning-hook", 0, 0, G_OPTION_ARG_STRING, &tuning_hook, "Program to run when tuned frequency changes", "PROGRAM" },
 	{ "bandwidth", 'b', 0, G_OPTION_ARG_INT, &bandwidth, "Bandwith for DDC Perseus receiver", "BANDWIDTH" },
+	{ "perseus", 'p', 0, G_OPTION_ARG_NONE, &perseus, "Perseus receiver", "PERSEUS" },
+	{ "elad", 'e', 0, G_OPTION_ARG_NONE, &elad, "Elad FDSM1 receiver", "ELAD" },
 	{ NULL }
 };
 
@@ -131,11 +138,17 @@ int main(int argc, char *argv[]) {
 	// create a new SDR, and set up the jack client
 	sdr = sdr_new(fft_size);
 
-	if (bandwidth==0) {
+	if (bandwidth == 0) {
 		audio_start(sdr);
 	} else {
-		g_print ("Starting Perseus....\n");
-		if (perseus_start (sdr, bandwidth)) exit (255);
+        if (perseus) {
+		   g_print ("Starting Perseus....\n");
+		   if (perseus_start (sdr, bandwidth)) exit (255);
+        } else
+        if (elad) {
+		   g_print ("Starting FDSM1....\n");
+		   if (fdms1_start (sdr, bandwidth)) exit (255);
+        }
 	}
 
 	// define a filter and configure a default shape
@@ -144,15 +157,25 @@ int main(int argc, char *argv[]) {
 	
 	// hook up the jack ports and start the client  
 	fft_setup(sdr);
-	if (bandwidth==0) {
-		audio_connect(sdr, connect_input, connect_output);
+	if (bandwidth == 0) {
+		audio_connect (sdr, connect_input, connect_output);
 	} else {
-		perseus_connect(sdr, connect_input, connect_output);
+        if (perseus) {
+		   perseus_connect (sdr, connect_input, connect_output);
+        } else
+        if (elad) {
+           fdms1_connect (sdr, connect_input, connect_output);
+        }
 	}
 	
 	sdr->centre_freq = centre_freq;
-	if (bandwidth!=0) {
-		perseus_update_freq (sdr); 
+	if (bandwidth != 0) {
+        if (perseus) {
+		   perseus_update_freq (sdr); 
+        } else
+        if (elad) {
+           fdms1_update_freq (sdr);
+        }
 	}
 
 	gui_display(sdr, horizontal);
@@ -162,10 +185,15 @@ int main(int argc, char *argv[]) {
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
 
 	gtk_main();
-	if (bandwidth==0) {
+	if (bandwidth == 0) {
 		audio_stop(sdr);
 	} else {
-		perseus_stop(sdr);
+        if (perseus) {
+		   perseus_stop(sdr); 
+        } else
+        if (elad) {
+           fdms1_stop (sdr);
+        }
 	}
 	filter_fir_destroy(sdr->filter);
 	fft_teardown(sdr);

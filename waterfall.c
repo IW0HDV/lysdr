@@ -290,7 +290,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 	    snprintf(s, sizeof(s), "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
 
         int w = text_width_in_pix (cr, s); // compute the text width in pixels
-        printf ("width= %d x= %d last x: %d", (int)w, j, ltx);
+        //printf ("width= %d x= %d last x: %d", (int)w, j, ltx);
 
         if ((j - ltx) > w ) {
             // text is not overlapping, print it
@@ -305,7 +305,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
     	    cairo_set_source_rgb(cr, .75, .75, .75);
  			cairo_move_to(cr, j-(w/2), 18); // move to right text position depending on real width
             cairo_show_text(cr,s);
-            printf ("*");
+            //printf ("*");
             ltx = j; // update position of text
 
         } else {
@@ -315,7 +315,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 			cairo_line_to(cr, 0.5+j, 4);       // intermediate positon, height is half 
 			cairo_stroke(cr);
 		}
-        printf (" \n");
+        //printf (" \n");
 	}
 	break;
     case WF_O_HORIZONTAL:

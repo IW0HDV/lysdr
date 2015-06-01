@@ -93,7 +93,12 @@ struct PerseusAudio * perseus_audio_open   (int core_bandwidth) {
     ppa->SAMPLE_RATE =  deviceInfo->defaultSampleRate/4;
     fprintf (stderr,"input device=%d output device=%d\n",inputParameters.device,outputParameters.device);
 
-    fprintf (stderr, "************* AUDIO SR: %f / %d = %f\n", ppa->SAMPLE_RATE, ppa->CORE_BANDWIDTH, (float)ppa->SAMPLE_RATE/(float)ppa->CORE_BANDWIDTH);
+    fprintf (stderr, "************* AUDIO SR: %f / %d = %f sample per buf: %d\n", 
+             ppa->SAMPLE_RATE, 
+             ppa->CORE_BANDWIDTH, 
+             (float)ppa->SAMPLE_RATE/(float)ppa->CORE_BANDWIDTH,
+             ppa->SAMPLES_PER_BUFFER);
+
     rc=Pa_OpenStream (&ppa->stream,
                       &inputParameters,
                       &outputParameters,
