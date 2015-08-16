@@ -1,7 +1,7 @@
 /*
     fdms1_test.c
 
-    Copyright (C) 2013 - Andrea Montefusco, IW0HDV
+    Copyright (C) 2013, 2014, 2015 - Andrea Montefusco, IW0HDV
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.  
 
     #
-    # install the ELAD libraries
+    # install the ELAD libraries (32 bit)
     #
-    sudo dpkg -i ./Linux/i386_Install/deb/libfdms1_1.0-1_i386.deb
+    wget  http://sdr.eladit.com/FDM-S1%20Sampler/Linux/libfdms1_1.0-1_i386.deb
+    sudo dpkg -i ./libfdms1_1.0-1_i386.deb
     sudo ln -s /usr/local/lib/libfdms1_hw_ctrl.so.1.0 /usr/local/lib/libfdms1-hw-ctrl.so
+    #
+    # install the ELAD libraries (64 bit)
+    #
+    wget http://sdr.eladit.com/FDM-S1%20Sampler/Linux/libfdms1_1.0-1_amd64.deb
+    sudo dpkg -i ./libfdms1_1.0-1_amd64.deb
+    sudo ln -s /usr/local/lib64/libfdms1_hw_ctrl.so.1.0 /usr/local/lib/libfdms1-hw-ctrl.so
+    #
+    sudo ldconfig
     # 
     # compile and test
     #
@@ -38,6 +47,7 @@
 #include <math.h>
 #include <libusb-1.0/libusb.h>
 #include <time.h>
+#include <unistd.h>
 
 
 struct timespec diff (struct timespec start, struct timespec end)
@@ -123,7 +133,6 @@ int main(int argc, char **argv) {
 
    // Build the shared lib name, for example using snprintf() 
    snprintf (shl_name, sizeof(shl_name), "libfdms1_hw_init_%d.so.1.0", sr);
-
    // load the shared library (the shared library must be in a sys path or full path name must be given) 
    shl_handle = dlopen (shl_name, RTLD_NOW|RTLD_GLOBAL);
    if (shl_handle == NULL) {
@@ -138,9 +147,9 @@ int main(int argc, char **argv) {
        fprintf (stderr, "Function not found in library\n\n");
        exit (254);
    } else {
-   	/* Call the init... but do not expect that works...*/
+       /* Call the init... */
        fprintf (stdout, "Loading FPGA, please wait ....."); fflush (stdout);
-   	int rc = init(dev_handle);  // The function returns 0 on error.
+       int rc = init(dev_handle);  // The function returns 0 on error.
 
        if (rc) { 
           fprintf (stdout, "\rFPGA successfully loaded.                      \n"); 
@@ -187,7 +196,7 @@ int main(int argc, char **argv) {
    // Start the FIFO and read some data
    //
    {
-       int i;
+       int i = 0;
        int timeout = 2000; // in ms
        unsigned char buf [8192];
        long total_bytes_received = 0;
@@ -218,6 +227,7 @@ int main(int argc, char **argv) {
                  break;
 
           } else {
+              ++i;
               if (transferred >0) total_bytes_received += transferred;
           }
           usleep (10000);
