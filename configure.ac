@@ -35,7 +35,7 @@ AC_SEARCH_LIBS([libusb_init], [usb-1.0],[have_libusb10=yes],AC_MSG_ERROR([libusb
 AC_SEARCH_LIBS([SetHWLO], [fdms1-hw-ctrl],[have_fdms1=yes],AC_MSG_ERROR([fdms1-hw-ctrl required.]),[-ldl -lusb-1.0 -lc -lm])
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdlib.h string.h complex.h])
+AC_CHECK_HEADERS([stdlib.h string.h complex.h unistd.h])
 
 if test "x${have_jack}" = xyes; then
     AC_CHECK_HEADERS([jack/jack.h], [], [have_jack=no])
@@ -44,7 +44,7 @@ fi
 if test "x${have_jack}" = xno; then
     AC_MSG_ERROR([
 -----------------------------------
-  The libjack library and header file required to build ghpsdr3.
+  The libjack library and header file required to build lysdr.
 -----------------------------------])
 
 fi
@@ -58,7 +58,7 @@ fi
 if test "x${have_fftw3}" = xno; then
     AC_MSG_ERROR([
 -----------------------------------
-  The fftw3 library and header file required to build ghpsdr3.
+  The fftw3 library and header file required to build lysdr.
 -----------------------------------])
 
 fi
