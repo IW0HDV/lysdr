@@ -28,6 +28,7 @@
     wget http://sdr.eladit.com/FDM-S1%20Sampler/Linux/libfdms1_1.0-1_amd64.deb
     sudo dpkg -i ./libfdms1_1.0-1_amd64.deb
     sudo ln -s /usr/local/lib64/libfdms1_hw_ctrl.so.1.0 /usr/local/lib/libfdms1-hw-ctrl.so
+    export LD_LIBRARY_PATH=/usr/local/lib64/
     #
     sudo ldconfig
     # 
@@ -124,12 +125,13 @@ int main(int argc, char **argv) {
    /* 
     * sample rate from the first command line parameter
     */
-   if ( (argc != 2 || (sscanf (argv[1], "%d", &sr) != 1)) && (sr == 192000 || sr == 384000 || sr == 768000 || sr == 1536000)) {
-   	printf("Usage: %s [192000|384000|768000|1536000]\n\n",argv[0]);
-   	exit(255);
-    }
-
-   //dlopen(NULL,RTLD_NOW|RTLD_GLOBAL);
+   if ( (argc != 2 || (sscanf (argv[1], "%d", &sr) != 1))
+        || !(sr == 192000  || sr == 384000  || sr == 768000 ||
+             sr == 1536000 || sr == 3072000 || sr == 6144000)
+      ) {
+       printf("Usage: %s [192000|384000|768000|1536000|3072000|6144000]\n\n",argv[0]);
+       exit(255);
+   }
 
    // Build the shared lib name, for example using snprintf() 
    snprintf (shl_name, sizeof(shl_name), "libfdms1_hw_init_%d.so.1.0", sr);
@@ -210,7 +212,7 @@ int main(int argc, char **argv) {
  
        clock_gettime (CLOCK_REALTIME, &time_start);
 
-       for (; total_bytes_received  < 1024000 && n_tmo < 3; ) {
+       for (; total_bytes_received  < 102400000 && n_tmo < 3; ) {
           int transferred = 0;
 
           int rc = libusb_bulk_transfer ( dev_handle,
@@ -230,7 +232,6 @@ int main(int argc, char **argv) {
               ++i;
               if (transferred >0) total_bytes_received += transferred;
           }
-          usleep (10000);
        }
 
        // compute the sample per second
@@ -238,8 +239,9 @@ int main(int argc, char **argv) {
        time_diff = diff(time_start, time_end);
        diff_s = time_diff.tv_sec + (time_diff.tv_nsec/1E9) ;
        ns = total_bytes_received / 8;
-       fprintf (stderr, "****** Total byte(s) received: %ld in %d operation(s)\n", total_bytes_received, i);
-       fprintf (stderr, "Samples received: %lu, %.1Lf kS/s\n", ns, ((double)ns / (diff_s)/1E3) );
+       fprintf (stderr, "****** Total byte(s) received: %ld in %d operation(s), %d timeout(s), %Lf secs\n",
+                total_bytes_received, i, n_tmo, diff_s);
+       fprintf (stderr, "Samples received: %lu, %.1Lf kS/s\n", ns, ((double)ns / (diff_s) / 1E3) );
 
        fprintf (stderr, ">>>> StopFIFO\n");
        StopFIFO (dev_handle);
